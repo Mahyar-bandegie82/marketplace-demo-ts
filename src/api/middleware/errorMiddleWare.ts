@@ -1,0 +1,51 @@
+import createError from "http-errors";
+import type { Request, Response, NextFunction } from "express";
+
+interface AppError extends Error {
+  status?: number;
+  statusCode?: number;
+  code?: string;
+  details?: unknown;
+}
+
+interface ErrorBody {
+  error: string;
+  details?: unknown;
+}
+
+// Forward 404 error for unhandled routes
+export function notFound(req: Request, res: Response, next: NextFunction) {
+  next(createError(404, "route not found"));
+}
+
+// Centralized error handling middleware formatting error responses and status codes
+export function handleError(
+  err: AppError,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  let status = err.status ?? err.statusCode ?? 500;
+  let message = err.message;
+
+  if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
+    status = 401;
+    message = "invalid or expired token";
+  } else if (err.code === "P2002") {
+    status = 409;
+    message = "a record with this information already exists";
+  } else if (err.code === "P2025") {
+    status = 404;
+    message = "record not found";
+  }
+
+  if (status >= 500) {
+    console.error(err);
+    message = "internal server error";
+  }
+
+  const body: ErrorBody = { error: message };
+  if (err.details) body.details = err.details;
+
+  return res.status(status).json(body);
+}
