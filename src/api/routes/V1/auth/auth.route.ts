@@ -16,7 +16,7 @@ import {
     revokeAllForUser,
     revokeFamily,
     saveRefreshToken,
-} from "../../../../services/redis/refreshToken.service.js";
+} from "../../../../services/redis/refreshtoken.redis.js";
 import {
     changeUserInfo,
     getProfile,
@@ -27,7 +27,6 @@ import {
     unverifyUser,
 } from "../../../../services/auth/auth.services.js";
 import crypto from "crypto";
-import { redisSaveOtp, verifyOtp } from "../../../../services/redis/otp.service.js";
 
 // Extend Express Request to include `id` attached by auth middleware.
 // Move this block into a shared `src/types/express.d.ts` file if preferred.
